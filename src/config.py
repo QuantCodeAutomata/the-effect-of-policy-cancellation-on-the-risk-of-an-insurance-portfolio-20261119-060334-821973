@@ -40,6 +40,20 @@ EXP2_N_GRID_RUN = [1000, 2000, 5000, 10000, 30000, 100000]  # reduced grid; see 
 EXP2_N_MC_PAPER = 100_000  # Monte Carlo replications (data_requirements)
 EXP2_N_MC_RUN = 8_000  # reduced replication count; see results/RESULTS.md
 
+# Lemma 4.2 Wasserstein-distance check uses its own Monte Carlo size and its
+# own n-grid, decoupled from EXP2_N_MC_*/EXP2_N_GRID_*. The check estimates
+# W_p(Law(sqrt(n)*X_bar_n), Phi) from an n_mc-sized Monte Carlo sample of
+# sqrt(n)*X_bar_n matched against the exact quantile function of Phi; this
+# estimator carries its own O(n_mc^{-1/2}) sampling-noise floor (the
+# empirical-measure-to-population-law Wasserstein distance of a finite
+# n_mc-sample, not specified in the paper) that swamps the O(n^{-1/2})
+# CLT signal of Lemma 4.2 unless n_mc is kept much larger than every n in
+# the grid used here.
+EXP2_N_MC_WASSERSTEIN_PAPER = 2_000_000  # MC replications for the Wasserstein check (not specified in the paper)
+EXP2_N_GRID_WASSERSTEIN_PAPER = [1000, 2000, 5000, 10000, 20000, 50000]  # kept << EXP2_N_MC_WASSERSTEIN_PAPER so the n_mc^{-1/2} floor stays negligible
+EXP2_N_MC_WASSERSTEIN_RUN = 300_000  # reduced MC size for the Wasserstein check; see results/RESULTS.md
+EXP2_N_GRID_WASSERSTEIN_RUN = [500, 1000, 2000, 5000, 10000]  # reduced n-grid, kept << EXP2_N_MC_WASSERSTEIN_RUN
+
 # ---------------------------------------------------------------------------
 # exp_3: heterogeneous portfolio and stochastic cancellation (Section 4.3-4.4)
 # ---------------------------------------------------------------------------
@@ -52,6 +66,8 @@ EXP3_N_GRID_PAPER = [10_000, 50_000, 100_000, 500_000, 1_000_000]  # portfolio s
 EXP3_N_GRID_RUN = [10_000, 50_000, 200_000]  # reduced grid; see results/RESULTS.md
 EXP3_N_MC_PAPER = 50_000  # Monte Carlo replications for the stochastic case (data_requirements)
 EXP3_N_MC_RUN = 5_000  # reduced replication count; see results/RESULTS.md
+EXP3_N_BATCHES_PAPER = 20  # independent batches averaged per point, >=50_000*20 total MC draws (data_requirements)
+EXP3_N_BATCHES_RUN = 2  # reduced-run batch count; averaging reduces VaR_0.99 quantile-estimation noise
 # Equal-rate consistency check (verifies Delta_j^aggr/Delta_j -> sqrt(pi_j))
 EXP3_EQUALRATE_WEIGHTS = [0.2, 0.3, 0.5]  # l=3 segments, not specified in the paper beyond moment conditions
 EXP3_EQUALRATE_SIGMAS = [1.0, 1.5, 0.8]  # segment standard deviations, not specified in the paper

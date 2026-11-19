@@ -113,6 +113,40 @@ def chunked_sample_sums(
     return totals
 
 
+def chunked_sample_sums_coupled(
+    sampler: Callable[[tuple, np.random.Generator], np.ndarray],
+    n: int,
+    m: int,
+    n_mc: int,
+    rng: np.random.Generator,
+    max_chunk_elements: int = MAX_CHUNK_ELEMENTS,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Coupled sums for a portfolio of size ``n`` and the sub-portfolio of
+    size ``n - m`` obtained by removing ``m`` of the same policies.
+
+    Cancelling ``m`` policies out of an ``n``-policy portfolio is a pathwise
+    operation: the retained ``(n - m)``-portfolio shares its realised losses
+    with the original ``n``-portfolio (Sections 2-4 of the paper). Sampling
+    the two totals independently (one draw of size ``n`` and an unrelated
+    draw of size ``n - m``) discards this common-random-numbers structure and
+    adds two independent Monte Carlo errors instead of one, which swamps the
+    O(n^{-1/2}) (Lemma 4.1) or O(n^{-3/2}) (Theorem 3.3) signal whenever the
+    cancellation fraction is small. Drawing the ``n - m`` base sum first and
+    adding an independent increment of the remaining ``m`` draws realises the
+    same subset relationship while never materialising more than ``(n_mc,)``
+    arrays, so it needs no more memory than two independent draws.
+
+    Returns ``(totals_n, totals_nm)``, the sums of the ``n`` and ``n - m``
+    draws respectively, for each of ``n_mc`` Monte Carlo replications.
+    """
+    assert 0 <= m <= n, "m must satisfy 0 <= m <= n"
+    totals_nm = chunked_sample_sums(sampler, n - m, n_mc, rng, max_chunk_elements)
+    if m == 0:
+        return totals_nm.copy(), totals_nm
+    totals_incr = chunked_sample_sums(sampler, m, n_mc, rng, max_chunk_elements)
+    return totals_nm + totals_incr, totals_nm
+
+
 def chunked_sample_sums_with_tail(
     sampler: Callable[[tuple, np.random.Generator], np.ndarray],
     n: int,

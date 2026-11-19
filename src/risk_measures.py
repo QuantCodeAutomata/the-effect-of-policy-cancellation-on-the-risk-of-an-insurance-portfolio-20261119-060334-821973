@@ -68,8 +68,15 @@ def wasserstein_distance_1d(sample1: np.ndarray, sample2: np.ndarray, p: float =
     """
     s1 = np.sort(np.asarray(sample1, dtype=np.float64))
     s2 = np.sort(np.asarray(sample2, dtype=np.float64))
-    m = max(s1.size, s2.size)
-    grid = (np.arange(1, m + 1) - 0.5) / m
-    q1 = np.quantile(s1, grid)
-    q2 = np.quantile(s2, grid)
+    if s1.size == s2.size:
+        # Equal-size sorted samples already sit at the same quantile levels
+        # (i - 0.5) / m, so the monotone coupling is just their pointwise
+        # difference; re-gridding through np.quantile would reproduce the
+        # same values at a much higher cost for the large n_mc used here.
+        q1, q2 = s1, s2
+    else:
+        m = max(s1.size, s2.size)
+        grid = (np.arange(1, m + 1) - 0.5) / m
+        q1 = np.quantile(s1, grid)
+        q2 = np.quantile(s2, grid)
     return float(np.mean(np.abs(q1 - q2) ** p) ** (1.0 / p))
