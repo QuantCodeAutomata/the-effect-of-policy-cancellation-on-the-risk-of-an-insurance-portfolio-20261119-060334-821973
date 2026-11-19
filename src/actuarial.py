@@ -141,24 +141,25 @@ def aggregated_ccr(
 
 
 def build_aggregated_portfolio(
-    cohort_size: float, theta: float, n_cohorts: int, variance_by_remaining_maturity: np.ndarray
+    cohort_size: float, theta: float, n_cohorts: int, variance_by_time_k: np.ndarray
 ) -> tuple[np.ndarray, np.ndarray]:
     """Weights and variances of the ``n_cohorts`` annual cohorts that make up
     the aggregated portfolio at the valuation date (Section 5.2 / 5.3).
 
-    Cohort j (remaining maturity j = 1, ..., n_cohorts-1, excluding the
-    maturity-0 cohort which carries no future risk) has been in force for
-    (T - j) years and has therefore been reduced by cancellations to size
-    n_j = cohort_size * (1 - theta)^{T - j}; its variance is the conditional
-    variance of the future loss at the point in the recursion corresponding
-    to that remaining maturity, ``variance_by_remaining_maturity[j]``.
+    The portfolio is built from cohorts of ``cohort_size`` new contracts
+    issued at the beginning of each of the preceding ``n_cohorts`` years, so
+    that the cohort now at policy time k (k = 1, ..., n_cohorts - 1; the
+    just-matured k=0 cohort carries no future risk) has the same size and
+    variance as the standalone new-business cohort at that time,
+    n_k = cohort_size * (1 - theta)^{k-1} and sigma_k^2 = variance_by_time_k[k]
+    (paper Table 2 / Table 3, where both tables report identical n_k
+    columns for every k and theta).
 
-    Returns (weights w_j, variances sigma_j^2) for j = 1, ..., n_cohorts - 1,
+    Returns (weights w_k, variances sigma_k^2) for k = 1, ..., n_cohorts - 1,
     normalised so that the weights sum to one.
     """
-    maturities = np.arange(1, n_cohorts)  # remaining maturity j = 1..n_cohorts-1
-    t = n_cohorts
-    sizes = cohort_size * (1.0 - theta) ** (t - maturities)
+    k = np.arange(1, n_cohorts)  # policy time k = 1..n_cohorts-1
+    sizes = cohort_size * (1.0 - theta) ** (k - 1)
     weights = sizes / sizes.sum()
-    variances = variance_by_remaining_maturity[maturities]
+    variances = variance_by_time_k[k]
     return weights, variances
