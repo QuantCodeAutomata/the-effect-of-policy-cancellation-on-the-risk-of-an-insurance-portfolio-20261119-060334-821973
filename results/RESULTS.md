@@ -180,10 +180,9 @@ paper's 3,892.79 (0.004% relative difference).
   by taking a ratio of two small, noisy differences; the corresponding
   analytic formulas (`ratio_theory` in `exp3_example47.csv`) match the
   paper's reported ≈4.03 value to three significant figures.
-- No authors' code or data repository link was found in the retrieved
-  sections of the paper; all formulas were implemented directly from the
-  theorem, lemma and example statements and from the mortality table listed
-  in the paper's Table 1.
+- No authors' code or data repository link is given in the paper; all
+  formulas were implemented directly from the theorem, lemma and example
+  statements and from the mortality table listed in the paper's Table 1.
 
 ## Not reproduced
 
